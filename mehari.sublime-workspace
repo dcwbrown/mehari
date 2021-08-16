@@ -1,0 +1,364 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"abef",
+				"abcdefghijklmnopqrstuvwxuz{|"
+			],
+			[
+				"e",
+				"exit"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "Makefile",
+			"settings":
+			{
+				"buffer_size": 181,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"tab",
+				"Table of Comments: Show"
+			],
+			[
+				"tabl",
+				"Table of Comments: Show"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 413.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/Users/dave/esp-idf/examples/peripherals/spi_master/lcd/README.md",
+		"/C/Users/dave/esp-idf/projects/lcd/README.md",
+		"/C/Users/dave/esp-idf/projects/lcd/main/spi_master_example_main.c",
+		"/C/Users/dave/esp-idf/components/driver/include/driver/spi_common.h",
+		"/C/Users/dave/esp-idf/components/driver/spi_master.c",
+		"/C/Users/dave/esp-idf/components/driver/include/driver/spi_master.h",
+		"/C/Users/dave/esp-idf/components/driver/include/driver/spi_common_internal.h",
+		"/C/Users/dave/esp-idf/components/soc/include/soc/spi_periph.h",
+		"/C/Users/dave/esp-idf/components/soc/esp32/spi_periph.c",
+		"/C/Users/dave/esp-idf/components/hal/include/hal/spi_types.h",
+		"/C/Users/dave/esp-idf/projects/lcd/components/tjpgd/src/tjpgd.c",
+		"/C/Users/dave/projects/Raspberry Pi Pico/Pico_code/Python/Readme.txt",
+		"/C/Users/dave/projects/asm/adapt/kernel.fasm",
+		"/C/Users/dave/projects/Cliddesden/evidence/log.txt",
+		"/C/Users/dave/projects/asm/adapt/altregnames.inc",
+		"/C/Users/dave/projects/asm/adapt/mcfun.pl",
+		"/?pen/store/var/vp2/logs/2021-06-28.log",
+		"/C/Users/dave/projects/asm/adapt/test.pcl",
+		"/C/Users/dave/projects/asm/adapt/archive 04 Apr 2021/adapt.fasm",
+		"/C/Users/dave/projects/asm/adapt/archive 04 Apr 2021/outline.c",
+		"/C/Users/dave/projects/asm/adapt/graphictest.fasm",
+		"/C/Users/dave/projects/asm/adapt/adapt.fasm",
+		"/C/Users/dave/projects/asm/adapt/t2",
+		"/?OLD/install/BeyondCompare/V4/Registration.txt",
+		"/?OLD/dave/Maintainance/Disk Images/Archive directories/Documents/dbrown/OUT/AK1000.TXT",
+		"/C/Users/dave/projects/VisualStudio/Exceptional/exceptional.c",
+		"/C/Users/dave/projects/VisualStudio/Exceptional/exceptional.cod",
+		"/C/Users/dave/projects/asm/adapt/debug.inc",
+		"/C/Users/dave/projects/VisualStudio/hello/hello.cpp",
+		"/C/Users/dave/projects/asm/adapt/kernel.lst",
+		"/C/Users/dave/projects/asm/adapt/t1",
+		"/C/Users/dave/projects/asm/adapt/make.cmd",
+		"/C/Users/dave/projects/Cliddesden/survey/doc.mf",
+		"/C/Users/dave/projects/oberon/voc/master/src/runtime/In.Mod",
+		"/C/Users/dave/projects/asm/adapt/ch",
+		"/C/Users/dave/projects/asm/adapt/gui.inc",
+		"/C/Users/dave/AppData/Local/Temp/scp15296/home/dcwbrown10/www/www.davebrown.uk/movie.php",
+		"/C/Users/dave/projects/dcwbrown10/backup-ocelot.sh",
+		"/C/Users/dave/AppData/Local/Temp/scp59710/home/dcwbrown10/www/www.davebrown.uk/hello.php",
+		"/C/Users/dave/projects/dcwbrown10/obsolete/.admin/hello.php",
+		"/C/Users/dave/AppData/Local/Temp/scp31565/home/dcwbrown10/index.php",
+		"/C/Users/dave/AppData/Local/Temp/scp12096/home/dcwbrown10/refresh.php",
+		"/C/Users/dave/projects/dcwbrown10/mount-ocelot.sh",
+		"/C/Users/dave/AppData/Local/Temp/scp10817/home/dcwbrown10/movie.php",
+		"//wsl$/WLinux/home/dave/.config/rclone/rclone.conf",
+		"/C/Users/dave/AppData/Local/Temp/scp32233/home/dcwbrown10/.ssh/config",
+		"/C/Users/dave/AppData/Local/Temp/scp29134/etc/ssh/ssh_config",
+		"/C/Users/dave/AppData/Local/Temp/scp04945/home/dcwbrown10/index.php",
+		"/C/Users/dave/projects/oberon/voc/master/t/readreal.mod",
+		"/C/Users/dave/projects/oberon/voc/master/src/runtime/Texts.Mod",
+		"/C/Users/dave/AppData/Local/Temp/scp33706/home/dcwbrown10/index.html",
+		"/C/Users/dave/AppData/Local/Temp/scp30303/home/dcwbrown10/www/www.cliddesden-archive.uk/index.html",
+		"/C/Users/dave/projects/dcwbrown10/index.html",
+		"/C/Users/dave/projects/dcwbrown10/www/www.cliddesden-archive.uk/index.html",
+		"/C/Users/dave/projects/dcwbrown10/www/www.cliddesden-archive.uk/refresh.php",
+		"/C/Users/dave/projects/dcwbrown10/www/www.cliddesden-archive.uk/index.php",
+		"/C/Users/dave/projects/asm/adapt/test.adapt",
+		"/C/Users/dave/projects/asm/adapt/t.fasm",
+		"/C/Users/dave/projects/asm/adapt/codetest.fasm",
+		"/C/Users/dave/projects/asm/masm/hello.asm",
+		"/C/Users/dave/projects/asm/fasm-windows/EXAMPLES/WIN64/PE64DEMO/PE64DEMO.ASM",
+		"/C/Users/dave/projects/asm/fasmw17327/EXAMPLES/WIN64/TEMPLATE/TEMPLATE.ASM",
+		"/C/Users/dave/projects/asm/fasm-windows/EXAMPLES/WIN64/TEMPLATE/TEMPLATE.ASM",
+		"/C/Users/dave/projects/asm/fasmw17327/EXAMPLES/WIN64/PE64DEMO/PE64DEMO.ASM",
+		"/C/Users/dave/Nextcloud/Documents/notes.flux",
+		"/C/Users/dave/projects/c/MinimalX11C/TinyCurveX11.c",
+		"/C/Users/dave/projects/c/outline/curve.c",
+		"/C/Users/dave/projects/c/outline/outline.c",
+		"/C/Users/dave/projects/c/IndieText/Resolve.c",
+		"/C/Users/dave/Documents/lastpass.csv",
+		"/C/Users/dave/Downloads/contacts-2020-03-22.vcf",
+		"/C/Users/dave/notes.flux",
+		"/C/Users/dave/projects/GitHub/freenas-iocage-nextcloud/README.md",
+		"/C/Users/dave/projects/avr/lighting/controller/controller.c",
+		"/C/Users/dave/projects/avr/lighting/controller/ui.h",
+		"/C/Users/dave/AppData/Roaming/Sublime Text 3/Packages/Table of comments/tableofcomments.py",
+		"//OLD/dave/svg-text.svg",
+		"/C/Users/dave/projects/oberon/ethz/ftp2006/OberonV4/Linux/latest/README",
+		"/C/Users/dave/projects/oberon/ethz/ftp2006/BlackBox/Win/BBox132.EXE",
+		"/C/Users/dave/Downloads/readme.txt",
+		"/C/Users/dave/projects/oberon/ethz/ftp2006/Books/PinOberon/00README",
+		"/C/Users/dave/projects/oberon/ethz/ftp2006/Books/Compilerbau/ASCII-DOS/OSG.Mod",
+		"//OLD/install/PhaseOne/CaptureOne.Win.12.0.0 registration.txt",
+		"/C/Users/dave/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/profiles.json",
+		"/C/Users/dave/Downloads/intel_android_driver_v1.10.0/Intel Android Driver v1.10.0/Credits.txt",
+		"/C/Users/dave/projects/oberon/OberonIdeWin32/README.md",
+		"/C/Users/dave/Downloads/scanner (1).log",
+		"/C/Users/dave/AppData/Local/Temp/Temp1_cintpos.zip/Cintpos/README",
+		"/C/Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/um/winuser.rh",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/EQUATES/GDI64.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/EQUATES/USER64.INC",
+		"/C/Users/dave/projects/asm/winfasm-simple/make.cmd",
+		"/C/Users/dave/projects/asm/winfasm-simple/simple.fasm",
+		"/C/Users/dave/projects/asm/fasm-windows/FASMW.INI",
+		"/C/Users/dave/AppData/Roaming/Sublime Text 3/Packages/User/tableofcomments.sublime-settings",
+		"/C/Users/dave/AppData/Roaming/Sublime Text 3/Installed Packages/Table of comments/tableofcomments.py",
+		"/C/Users/dave/AppData/Roaming/Sublime Text 3/Packages/Table of comments/tableofcomments.sublime-settings",
+		"/C/Users/dave/AppData/Roaming/Sublime Text 3/Installed Packages/Table of comments.sublime-package",
+		"/C/Users/dave/AppData/Roaming/Sublime Text 3/Packages/User/Package Control.cache/01524fae79697630d0454ba3fabd9414.info",
+		"/C/Users/dave/projects/VisualStudio/Cute/Cute/Cute.cpp",
+		"/C/Users/dave/projects/asm/adapt/v.fasm",
+		"/C/Users/dave/projects/asm/fasm-windows/EXAMPLES/WIN64/MANDEL/MANDEL.ASM",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/MACRO/STRUCT.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/MACRO/PROC64.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/WIN64A.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/EXAMPLES/TEMPLATE/TEMPLATE.ASM",
+		"/C/Users/dave/projects/asm/adapt/outline.c",
+		"/C/Users/dave/AppData/Local/Temp/Temp2_code_kerrwincpp0814.zip/Sample/Debug.h",
+		"/C/Users/dave/AppData/Local/Temp/Temp2_code_kerrwincpp0814.zip/Sample/Window.h",
+		"/C/Users/dave/AppData/Local/Temp/Temp2_code_kerrwincpp0814.zip/Sample/Precompiled.h",
+		"/C/Users/dave/projects/VisualStudio/DirectDraw/DirectDraw/DirectDraw.cpp",
+		"/C/Users/dave/AppData/Local/Temp/Temp1_code_kerrwincpp0814.zip/Sample/Sample.cpp",
+		"//gan/d/projects/forth/forthwrite/window-gdi.c",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/MACRO/RESOURCE.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/MACRO/MASM.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/MACRO/IF.INC",
+		"//OLD/install/Micro editor/micro-1.4.1-win64/micro-1.4.1/README.md",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/WIN64W.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/WIN64WXP.INC",
+		"/C/Users/dave/projects/asm/fasm-windows/EXAMPLES/HELLO/HELLO.ASM",
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/API/USER32.INC",
+		"/C/Users/dave/projects/asm/adapt/lt.fasm",
+		"/C/Users/dave/AppData/Local/Temp/Temp1_win64_drivers.zip/!readme.txt",
+		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalSystemsTexts.txt",
+		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalCompiler.txt",
+		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalRuntime.txt",
+		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalSystem.txt",
+		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/P6K_UTILS.TXT"
+	],
+	"find":
+	{
+		"height": 23.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "Makefile",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 181,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 40.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"output.unicode_preview":
+	{
+		"height": 342.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 188.0
+	},
+	"pinned_build_system": "",
+	"project": "mehari.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 219.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

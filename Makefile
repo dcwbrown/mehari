@@ -3,6 +3,6 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := spi_master
+PROJECT_NAME := mehari-lcd
 
 include $(IDF_PATH)/make/project.mk
