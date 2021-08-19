@@ -34,7 +34,7 @@
 #define PIN_NUM_MISO 19 // 25
 #define PIN_NUM_MOSI 23
 #define PIN_NUM_CLK  18 // 19
-#define PIN_NUM_CS   5  // 22
+//#define PIN_NUM_CS   5  // 22
 
 #define PIN_NUM_DC   17 // 21
 #define PIN_NUM_RST  16 // 18
@@ -89,6 +89,8 @@ DRAM_ATTR static const lcd_init_cmd_t st_init_cmds[]={
     {0, {0}, 0xff}
 };
 
+int CSPin = 5;  // Initial CS
+
 
 /* Send a command to the LCD. Uses spi_device_polling_transmit, which waits
  * until the transfer is complete.
@@ -135,6 +137,12 @@ void lcd_spi_pre_transfer_callback(spi_transaction_t *t)
 {
     int dc=(int)t->user;
     gpio_set_level(PIN_NUM_DC, dc);
+    gpio_set_level(CSPin, 0);  // Select CS of current target LCD
+}
+
+void lcd_spi_post_transfer_callback(spi_transaction_t *t)
+{
+    gpio_set_level(CSPin, 1);  // Deselect CS of current target LCD
 }
 
 //Initialize the display
@@ -146,12 +154,13 @@ void lcd_init(spi_device_handle_t spi)
     //Initialize non-SPI GPIOs
     gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
     gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
+    gpio_set_direction(CSPin, GPIO_MODE_OUTPUT);
+    gpio_set_level(CSPin, 1);  // Deselect CS of current target LCD
+
 
     //Reset the display
-    gpio_set_level(PIN_NUM_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
-    gpio_set_level(PIN_NUM_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    gpio_set_level(PIN_NUM_RST, 0);  vTaskDelay(100/portTICK_RATE_MS);
+    gpio_set_level(PIN_NUM_RST, 1);  vTaskDelay(100/portTICK_RATE_MS);
 
     lcd_init_cmds = st_init_cmds;
 
@@ -165,7 +174,7 @@ void lcd_init(spi_device_handle_t spi)
         cmd++;
     }
 
-    printf("LCD initialization complete.\n");
+    printf("LCD initialization for CS pin %d complete.\n", CSPin);
 }
 
 
@@ -294,9 +303,10 @@ void app_main(void)
         .clock_speed_hz=10*1000*1000,           //Clock out at 10 MHz
 #endif
         .mode         = 0,                      //SPI mode 0
-        .spics_io_num = PIN_NUM_CS,             // tried -1, didn't work.
+        .spics_io_num = -1,                     //Was: PIN_NUM_CS
         .queue_size   = 7,                      //We want to be able to queue 7 transactions at a time
-        .pre_cb       = lcd_spi_pre_transfer_callback,  //Specify pre-transfer callback to handle D/C line
+        .pre_cb       = lcd_spi_pre_transfer_callback,  // Selects target LCD CS and handles D/C line
+        .post_cb      = lcd_spi_post_transfer_callback, // Deselects target LCD CS
     };
 
     //gpio_set_direction(PIN_NUM_CS, GPIO_MODE_OUTPUT);
@@ -314,7 +324,8 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
 
     //Initialize the LCD
-    //gpio_set_level(PIN_NUM_CS, 0);  // Select
+
+    CSPin = 19; // Was: 5;
     lcd_init(spi);
 
     //Initialize the effect displayed

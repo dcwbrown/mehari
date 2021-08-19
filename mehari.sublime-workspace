@@ -15,14 +15,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "Makefile",
-			"settings":
-			{
-				"buffer_size": 181,
-				"line_ending": "Windows"
-			}
-		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -66,8 +58,21 @@
 		"side_bar_visible": false,
 		"status_bar_visible": false
 	},
+	"expanded_folders":
+	[
+		"/C/Users/dave/projects/mehari",
+		"/C/Users/dave/projects/mehari/build",
+		"/C/Users/dave/projects/mehari/main"
+	],
 	"file_history":
 	[
+		"/C/Users/dave/projects/mehari/main/mehari-main.c",
+		"/C/Users/dave/AppData/Local/Temp/scp22913/home/dcwbrown10/www/www.davebrown.uk/More Downlands/.index",
+		"/C/Users/dave/AppData/Local/Temp/scp26633/pub/Papers/Index",
+		"/C/Users/dave/AppData/Local/Temp/scp55582/home/dcwbrown10/www/www.davebrown.uk/More Downlands/1F4A0735.jpg",
+		"/C/Users/dave/projects/mehari/Makefile",
+		"/C/Users/dave/projects/mehari/main/CMakeLists.txt",
+		"/C/Users/dave/projects/mehari/.gitignore",
 		"/C/Users/dave/esp-idf/examples/peripherals/spi_master/lcd/README.md",
 		"/C/Users/dave/esp-idf/projects/lcd/README.md",
 		"/C/Users/dave/esp-idf/projects/lcd/main/spi_master_example_main.c",
@@ -188,14 +193,7 @@
 		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/WIN64W.INC",
 		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/WIN64WXP.INC",
 		"/C/Users/dave/projects/asm/fasm-windows/EXAMPLES/HELLO/HELLO.ASM",
-		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/API/USER32.INC",
-		"/C/Users/dave/projects/asm/adapt/lt.fasm",
-		"/C/Users/dave/AppData/Local/Temp/Temp1_win64_drivers.zip/!readme.txt",
-		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalSystemsTexts.txt",
-		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalCompiler.txt",
-		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalRuntime.txt",
-		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/PascalSystem.txt",
-		"//OLD/publications/Computers and software/Programming languages/Pascal/CDC 6000/1984/P6K_UTILS.TXT"
+		"/C/Users/dave/projects/asm/fasm-windows/INCLUDE/API/USER32.INC"
 	],
 	"find":
 	{
@@ -234,36 +232,6 @@
 		{
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "Makefile",
-					"selected": true,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 181,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"stack_multiselect": false,
-					"type": "text"
-				}
 			]
 		}
 	],
