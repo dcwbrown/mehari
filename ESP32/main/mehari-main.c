@@ -9,13 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 
-#include "pretty_effect.h"
+#include "symbols.h"
 
 /*
  This code displays some fancy graphics on the 320x240 LCD on an ESP-WROVER_KIT board.
@@ -56,36 +57,27 @@ typedef struct {
 
 //Place data into DRAM. Constant data gets placed into DROM by default, which is not accessible by DMA.
 DRAM_ATTR static const lcd_init_cmd_t st_init_cmds[]={
-    /* Memory Data Access Control, MX=MV=1, MY=ML=MH=0, RGB=0 */
-    {0x36, {(1<<5)|(1<<6)}, 1},
-    /* Interface Pixel Format, 16bits/pixel for RGB/MCU interface */
-    {0x3A, {0x55}, 1},
-    /* Porch Setting */
-    {0xB2, {0x0c, 0x0c, 0x00, 0x33, 0x33}, 5},
-    /* Gate Control, Vgh=13.65V, Vgl=-10.43V */
-    {0xB7, {0x45}, 1},
-    /* VCOM Setting, VCOM=1.175V */
-    {0xBB, {0x2B}, 1},
-    /* LCM Control, XOR: BGR, MX, MH */
-    {0xC0, {0x2C}, 1},
-    /* VDV and VRH Command Enable, enable=1 */
-    {0xC2, {0x01, 0xff}, 2},
-    /* VRH Set, Vap=4.4+... */
-    {0xC3, {0x11}, 1},
-    /* VDV Set, VDV=0 */
-    {0xC4, {0x20}, 1},
-    /* Frame Rate Control, 60Hz, inversion=0 */
-    {0xC6, {0x0f}, 1},
-    /* Power Control 1, AVDD=6.8V, AVCL=-4.8V, VDDS=2.3V */
-    {0xD0, {0xA4, 0xA1}, 1},
+
+    {0x36, {(1<<5)|(1<<6)}, 1},                 // Memory Data Access Control, MX=MV=1, MY=ML=MH=0, RGB=0
+    {0x3A, {0x55}, 1},                          // Interface Pixel Format, 16bits/pixel for RGB/MCU interface
+    {0xB2, {0x0c, 0x0c, 0x00, 0x33, 0x33}, 5},  // Porch Setting
+    {0xB7, {0x45}, 1},                          // Gate Control, Vgh=13.65V, Vgl=-10.43V
+    {0xBB, {0x2B}, 1},                          // VCOM Setting, VCOM=1.175V
+    {0xC0, {0x2C}, 1},                          // LCM Control, XOR: BGR, MX, MH
+    {0xC2, {0x01, 0xff}, 2},                    // VDV and VRH Command Enable, enable=1
+    {0xC3, {0x11}, 1},                          // VRH Set, Vap=4.4+...
+    {0xC4, {0x20}, 1},                          // VDV Set, VDV=0
+    {0xC6, {0x0f}, 1},                          // Frame Rate Control, 60Hz, inversion=0
+    {0xD0, {0xA4, 0xA1}, 1},                    // Power Control 1, AVDD=6.8V, AVCL=-4.8V, VDDS=2.3V
+
     /* Positive Voltage Gamma Control */
     {0xE0, {0xD0, 0x00, 0x05, 0x0E, 0x15, 0x0D, 0x37, 0x43, 0x47, 0x09, 0x15, 0x12, 0x16, 0x19}, 14},
+
     /* Negative Voltage Gamma Control */
     {0xE1, {0xD0, 0x00, 0x05, 0x0D, 0x0C, 0x06, 0x2D, 0x44, 0x40, 0x0E, 0x1C, 0x18, 0x16, 0x19}, 14},
-    /* Sleep Out */
-    {0x11, {0}, 0x80},
-    /* Display On */
-    {0x29, {0}, 0x80},
+
+    {0x11, {0}, 0x80},  // Sleep Out
+    {0x29, {0}, 0x80},  // Display On
     {0, {0}, 0xff}
 };
 
@@ -176,6 +168,50 @@ void lcd_init(spi_device_handle_t spi)
 
     printf("LCD initialization for CS pin %d complete.\n", CSPin);
 }
+
+
+
+
+
+
+void calc_lines(uint16_t *dest, int line, int frame, int linect)
+{
+  int symindex = (frame/10) % numsyms;
+
+  int width   = symbols[symindex].width;
+  int height  = symbols[symindex].height;
+  int xoffset = (320 - width)  / 2;
+  int yoffset = (240 - height) / 2;
+
+  for (int y = line; y < line + linect; y++) {
+    int x;
+    if ((y < yoffset) || (y >= yoffset+height)) {
+      for (x=0; x<320; x++) {*dest++ = 0xffff;}
+    } else {
+      x=0;
+      while (x < xoffset) {*dest++ = 0xffff; x++;}
+      uint8_t *p = bits + symbols[symindex].rows[y-yoffset];
+      while ((x < 320) && (*p != 0x80)) {  // process pixels until eol
+        int n      = *p & 0x7f;
+        int repeat = *p & 0x80;
+        p++;
+        if (repeat) {
+          uint16_t v = 0xffff - *((uint16_t *)p);  p += 2;
+          for (int i=0; i<n; i++) {*dest++ = v;}
+        } else {
+          // distinct values
+          for (int i=0; i<n; i++) {
+            *dest++ = 0xffff - *((uint16_t *)p);  p += 2;
+          }
+        }
+        x += n;
+      }
+      while (x<320) {*dest++ = 0xffff; x++;}
+    }
+  }
+}
+
+
 
 
 /* To send a set of lines we have to send a command, 2 data bytes, another command, 2 more data bytes and another command
@@ -269,7 +305,7 @@ static void display_pretty_colors(spi_device_handle_t spi)
         frame++;
         for (int y=0; y<240; y+=PARALLEL_LINES) {
             //Calculate a line.
-            pretty_effect_calc_lines(lines[calc_line], y, frame, PARALLEL_LINES);
+            calc_lines(lines[calc_line], y, frame, PARALLEL_LINES);
             //Finish up the sending process of the previous line, if any
             if (sending_line!=-1) send_line_finish(spi);
             //Swap sending_line and calc_line
@@ -289,7 +325,7 @@ void app_main(void)
     esp_err_t ret;
     spi_device_handle_t spi;
     spi_bus_config_t buscfg={
-        .miso_io_num     = -1, // was PIN_NUM_MISO,
+        .miso_io_num     = -1, // MISO unused
         .mosi_io_num     = PIN_NUM_MOSI,
         .sclk_io_num     = PIN_NUM_CLK,
         .quadwp_io_num   = -1,
@@ -297,20 +333,13 @@ void app_main(void)
         .max_transfer_sz = PARALLEL_LINES*320*2+8
     };
     spi_device_interface_config_t devcfg={
-#ifdef CONFIG_LCD_OVERCLOCK
-        .clock_speed_hz=26*1000*1000,           //Clock out at 26 MHz
-#else
-        .clock_speed_hz=10*1000*1000,           //Clock out at 10 MHz
-#endif
-        .mode         = 0,                      //SPI mode 0
-        .spics_io_num = -1,                     //Was: PIN_NUM_CS
-        .queue_size   = 7,                      //We want to be able to queue 7 transactions at a time
-        .pre_cb       = lcd_spi_pre_transfer_callback,  // Selects target LCD CS and handles D/C line
-        .post_cb      = lcd_spi_post_transfer_callback, // Deselects target LCD CS
+        .clock_speed_hz = 10*1000*1000,  // Clock out at 10 MHz
+        .mode           = 0,             // SPI mode 0
+        .spics_io_num   = -1,            // Was: PIN_NUM_CS
+        .queue_size     = 7,             // We want to be able to queue 7 transactions at a time
+        .pre_cb         = lcd_spi_pre_transfer_callback,  // Selects target LCD CS and handles D/C line
+        .post_cb        = lcd_spi_post_transfer_callback, // Deselects target LCD CS
     };
-
-    //gpio_set_direction(PIN_NUM_CS, GPIO_MODE_OUTPUT);
-    //gpio_set_level(PIN_NUM_CS, 1);  // Deselect
 
     gpio_set_direction(PIN_NUM_BCKL, GPIO_MODE_OUTPUT);
     gpio_set_level(PIN_NUM_BCKL, 0);  // Disable backlight
@@ -324,13 +353,8 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
 
     //Initialize the LCD
-
-    CSPin = 19; // Was: 5;
+    CSPin = 19;
     lcd_init(spi);
-
-    //Initialize the effect displayed
-    ret=pretty_effect_init();
-    ESP_ERROR_CHECK(ret);
 
     ///Enable backlight
     gpio_set_level(PIN_NUM_BCKL, 1);

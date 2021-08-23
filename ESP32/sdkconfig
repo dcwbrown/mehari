@@ -126,15 +126,6 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# Example Configuration
-#
-CONFIG_LCD_TYPE_AUTO=y
-# CONFIG_LCD_TYPE_ST7789V is not set
-# CONFIG_LCD_TYPE_ILI9341 is not set
-# CONFIG_LCD_OVERCLOCK is not set
-# end of Example Configuration
-
-#
 # Compiler options
 #
 CONFIG_COMPILER_OPTIMIZATION_DEFAULT=y
