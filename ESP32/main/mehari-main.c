@@ -41,10 +41,11 @@ DRAM_ATTR static const lcd_init_cmd_t st_init_cmds[] = {  // In DRAM for DMA acc
 
   {0x36, {(1<<5)|(1<<6)}, 1},                 // Memory Data Access Control, MX=MV=1, MY=ML=MH=0, RGB=0
   {0x3A, {0x55}, 1},                          // Interface Pixel Format, 16bits/pixel for RGB/MCU interface
+  {0xB0, {0x00, 0xF8}, 2},                    // RAM control - set little endian
   {0xB2, {0x0c, 0x0c, 0x00, 0x33, 0x33}, 5},  // Porch Setting
   {0xB7, {0x45}, 1},                          // Gate Control, Vgh=13.65V, Vgl=-10.43V
   {0xBB, {0x2B}, 1},                          // VCOM Setting, VCOM=1.175V
-  {0xC0, {0x2C}, 1},                          // LCM Control, XOR: BGR, MX, MH
+  {0xC0, {0x3C}, 1},                          // LCM Control, XOR: BGR & INV, MX, MH
   {0xC2, {0x01, 0xff}, 2},                    // VDV and VRH Command Enable, enable=1
   {0xC3, {0x11}, 1},                          // VRH Set, Vap=4.4+...
   {0xC4, {0x20}, 1},                          // VDV Set, VDV=0
@@ -158,69 +159,60 @@ void lcd_init(spi_device_handle_t spi) {
 //           c) Where this is the last scanline of an edge, advance to the ext edge.
 
 
-struct edge {int x1; int y1; int x2; int y2;} edges[4];
+enum {maxedges = 20};  // Roughly 14 expected
 
-int curedge;
+struct vertex {int x; int y;};
+
+struct edge {int x1; int y1; int x2; int y2;} edges[maxedges];
+
+int edgecount = 0;
 
 void rotate(int x, int y, int xo, int yo, float sine, float cosine, int *xr, int *yr) {
   *xr = (int)(xo + (x-xo)*cosine - (y-yo)*sine);
   *yr = (int)(yo + (y-yo)*cosine + (x-xo)*sine);
 }
 
-//void order(int *a, int *b) {if (*a > *b) {int t = *a;  *a = *b;  *b = t;}}
-
-
 void addedge(int x1, int y1, int x2, int y2, int xo, int yo, float sine, float cosine) {
-  rotate(x1, y1, xo, yo, sine, cosine, &edges[curedge].x1, &edges[curedge].y1);
-  rotate(x2, y2, xo, yo, sine, cosine, &edges[curedge].x2, &edges[curedge].y2);
 
-  // Arrange the edge with y1 being <= y2
-  if (edges[curedge].y1 > edges[curedge].y2) {
-    int xt = edges[curedge].x1;             int yt = edges[curedge].y1;
-    edges[curedge].x1 = edges[curedge].x2;  edges[curedge].y1 = edges[curedge].y2;
-    edges[curedge].x2 = xt;                 edges[curedge].y2 = yt;
+  if ((x1 != y1) || (x2 != y2)) {  // Omit 0 length edges
+
+    assert(edgecount < maxedges);
+
+    rotate(x1, y1, xo, yo, sine, cosine, &edges[edgecount].x1, &edges[edgecount].y1);
+    rotate(x2, y2, xo, yo, sine, cosine, &edges[edgecount].x2, &edges[edgecount].y2);
+
+    // Arrange the edge with y1 being <= y2
+    if (edges[edgecount].y1 > edges[edgecount].y2) {
+      int xt = edges[edgecount].x1;               int yt = edges[edgecount].y1;
+      edges[edgecount].x1 = edges[edgecount].x2;  edges[edgecount].y1 = edges[edgecount].y2;
+      edges[edgecount].x2 = xt;                   edges[edgecount].y2 = yt;
+    }
+
+    edgecount++;
   }
-  curedge++;
 }
 
 
-void initrectangle(int x1, int y1, int x2, int y2, int xo, int yo, float angle) {
+
+
+void initpolygon(int vertexcount, struct vertex vertices[], int originx, int originy, float angle) {
+
   float sine   = sin(angle);
   float cosine = cos(angle);
 
-  curedge = 0;
-  addedge(x1, y1, x2, y1, xo, yo, sine, cosine);
-  addedge(x2, y1, x2, y2, xo, yo, sine, cosine);
-  addedge(x1, y1, x1, y2, xo, yo, sine, cosine);
-  addedge(x1, y2, x2, y2, xo, yo, sine, cosine);
+  edgecount = 0;
 
-  // sort edges by initial y
-
-  int i, j;
-
-  struct edge tedge;
-
-  // Sort edges such that
-  //   The lowest y1's come first
-  //   Where two edges have the same y1, then the lowest y2 comes first
-  for (i=0; i<3; i++) {
-    for (j=i+1; j<4; j++) {
-      struct edge *ea = &edges[i];
-      struct edge *eb = &edges[j];
-      if ((ea->y1 > eb->y1) || ((ea->y1 == eb->y1) && (ea->y2 > eb->y2))) {
-        tedge = *ea;  *ea = *eb;  *eb = tedge;
-      }
-    }
+  for (int i = 0;  i < vertexcount;  i++) {
+    addedge(
+      vertices[i].x, vertices[i].y, vertices[(i+1)%vertexcount].x, vertices[(i+1)%vertexcount].y,
+      originx, originy,
+      sine, cosine
+    );
   }
-  assert(edges[0].y1 == edges[1].y1);
-
-  //printf("Sorted edges:\n");
-  //for (i=0; i<4; i++) {
-    //printf("  %d,%d .. %d,%d\n", edges[i].x1, edges[i].y1, edges[i].x2, edges[i].y2);
-  //}
-
-  curedge = 0;
 }
+
+
+
 
 int interpolate(int a, int a1, int a2, int b1, int b2) {
   // input: a is a position between a1 and a2
@@ -229,77 +221,199 @@ int interpolate(int a, int a1, int a2, int b1, int b2) {
   return b1 + ((a-a1)*(b2-b1))/(a2-a1);
 }
 
-void scanlinepolygon(int y, u16 *dest) {
 
-  // First skip any and all exhausted edges
-  while ((curedge < 4) && (edges[curedge].y2 <= y)) {curedge++;}
 
-  if ((curedge < 4) && (y >= edges[curedge].y1)) {
-    int i, j, t, edgecount, x[4];
 
-    //printf("y = %d, consider edges:\n", y);
+int blendchannel(int paint, int intensity, int canvas) {
+  if (intensity == 0)  return canvas;
+  if (intensity > 127) return paint;
 
-    edgecount = 0;
-    while ((curedge+edgecount < 4) && (edges[curedge+edgecount].y1 <= y)) {
-      struct edge *ep = &edges[curedge+edgecount];
+  //printf("Blend paint %d, intensity %d, canvas %d.", paint , intensity, canvas);
 
-      x[edgecount] = interpolate(y, ep->y1, ep->y2,  ep->x1, ep->x2);
+  // Calulate linear values of paint and canvas in the range 0 .. 63*63*128
+  int paintpart  = paint  * paint  *      intensity;
+  int canvaspart = canvas * canvas * (128-intensity);
 
-      //printf("  %d,%d .. %d,%d -> %d\n", ep->x1, ep->y1, ep->x2, ep->y2, x[edgecount]);
+  //printf(" paintpart %d, canvaspart %d.", paintpart, canvaspart);
 
-      edgecount++;
-    }
+  // Result is sum of paint and canvas converted back to log law in the range 0..63
 
-    // sort edge x's
-    for (i=0; i<(edgecount-1); i++) {
-      for (j=i+1; j<edgecount; j++) {
-        if (x[i] > x[j]) {t = x[i]; x[i] = x[j]; x[j] = t;}
-      }
-    }
+  int result = (int)sqrt((paintpart + canvaspart) / 128.0);
 
-    // expect an even number of x's
-    if ((edgecount%2) != 0) {
-      //printf("unexpected odd edge count %d for y = %d. x's are: ", edgecount, y);
-      //for (i=0; i<edgecount; i++) {printf(" %d", x[i]);}
-      //printf(".\n");
-      assert((edgecount%2) == 0);
-    }
+  //printf(" result %d.\n", result);
+  assert(result < 64);
 
-    // render extents in pairs
+  return result;
+}
 
-    //printf("fill y=%d, edgecount %d", y, edgecount);
 
-    for (i = 0;  i+1 < edgecount;  i += 2) {
-      //printf(", %d..%d", x[i], x[i+1]);
-      for (j = x[i];  j < x[i+1]; j++) {dest[j] = 0xffe0;}
-    }
-    //printf(".\n");
+void blendsrgb(int r, int g, int b, int intensity, u16* dest) {
+  // r, g, b in [0..63]
+  // intensity in [0..128]
+
+  if (intensity > 0) {
+
+    // Exiting red, green, blue values (srgb).
+
+    int rd = ((*dest) >> 10) & 0x3E;
+    int gd = ((*dest) >> 5)  & 0x3F;
+    int bd = ((*dest) << 1)  & 0x3E;
+
+    // New rgb values (r prime, g prime, b prime).
+
+    int rp = blendchannel(r, intensity, rd);
+    int gp = blendchannel(g, intensity, gd);
+    int bp = blendchannel(b, intensity, bd);
+
+    assert(rp < 64);
+    assert(gp < 64);
+    assert(bp < 64);
+
+    *dest = ((rp & 0x3E) << 10) | (gp << 5) | (bp >> 1);
   }
 }
 
 
 
 
-const int   centrex = 151;
-const int   centrey = 166;
-const float needlen = 124.0;
+void scanlinepolygon(int y, u16 *dest) {
+  int i, j, t, xcount, x[4*edgecount];
+
+  xcount = 0;
+
+  for (int sy = 0;  sy < 4;  sy++) {  // For each subpixel scanline
+
+    for (int e = 0;  e < edgecount;  e++) {
+      struct edge *ep = &edges[e];
+
+      if ((y >= ep->y1) && (y < ep->y2)) {
+
+        int sx = interpolate(y*4+sy,  ep->y1*4, ep->y2*4,  ep->x1*32, ep->x2*32);
+        x[xcount++] = sx*4 | sy;  // Note - include sub scanline as bottom bits of x positions
+
+        //printf("Process edge from %d,%d to %d,%d for line %d giving %d.%d[%d].\n",
+        //  ep->x1, ep->y1, ep->x2, ep->y2, y,
+        //  sx>>5, sx&3, sy
+        //);
+
+      }
+    }
+  }
+
+  if (xcount >= 2) {
+
+    // sort edge x's
+    for (i = 0;  i < (xcount-1);  i++) {
+      for (j = i+1;  j<xcount;  j++) {
+        if (x[i] > x[j]) {t = x[i]; x[i] = x[j]; x[j] = t;}
+      }
+    }
+
+    //printf("Found %d x positions for y = %d. x's are: ", xcount, y);
+    //for (i=0; i<xcount; i++) {
+    //  printf(" %d.%d[%d]", x[i]>>7, (x[i]>>2)&31, x[i]&3);
+    //}
+    //printf(".\n");
+
+    // expect an even number of x's
+    if ((xcount%2) != 0) {
+      printf("unexpected odd edge count %d for y = %d. x's are: ", xcount, y);
+      for (i=0; i<xcount; i++) {printf(" %d[%d]", x[i]>>2, x[i]&3);}
+      printf(".\n");
+      assert((xcount%2) == 0);
+    }
+
+    // Run through edges detemining pixel intensities
+
+    int x1[4] = {-1, -1, -1, -1};  // Start of subpixel active runs
+
+    u8 intensity[320] = {0};  // Intensity accumulator
+
+    for (i = 0;  i < xcount;  i++) {
+
+      int sx = x[i]>>2;   // Subpixel x position (bottom 5 bits are subpixel offset)
+      int sy = x[i] & 3;  // Subline - 0..3
+
+      if (x1[sy] < 0) {  // This subline currently inactive
+
+        x1[sy] = sx;  // Active from sx
+
+      } else {  // End of active part of subline
+
+        // Apply intensity from x1[sy] to sx
+
+        int dx = sx - x1[sy];
+
+        int x = x1[sy] >> 5;  // Initally touched pixel x
+
+        //printf("y = %d: touching subline %d from %d.%d to %d.%d, dx = %d, initial x = %d.\n",
+        //  y, sy, x1[sy]>>5, x1[sy]&31, sx>>5, sx&31, dx, x);
+
+        if (x1[sy] & 31) {  // First pixel coverage starts mid-pixel
+          int partcoverage = 32 - (x1[sy] & 31);
+          if (partcoverage > dx) {partcoverage = dx;}
+          intensity[x++] += partcoverage;
+          dx -= partcoverage;
+        }
+
+        while (dx >= 32) {intensity[x++] += 32; dx -= 32;}  // Apply wholly covered subline pixels
+
+        if (dx > 0) {intensity[x] = dx;}  // Apply final partially covered subline pixel
+
+        x1[sy] = -1;  // subpixel line sy is off again
+      }
+    }
+
+    // NOTE: all four x1's should now be -1.
+
+    // We now have a buffer of intensity by pixel, each valued 0..128.
+
+    for (j = 0;  j < 320;  j++) {
+      if (intensity[j] > 0) {
+        if (intensity[j] > 127) {
+          assert(intensity[j] == 128);
+          dest[j] = 0xffe0;
+        } else {
+          blendsrgb(63, 63, 0, intensity[j], &dest[j]);  // yellow
+        }
+      }
+    }
+  }
+
+  // render extents in pairs
+
+  //  //printf("fill y=%d, xcount %d", y, xcount);
+  //
+  //  for (i = 0;  i+1 < xcount;  i += 2) {
+  //    //printf(", %d..%d", x[i], x[i+1]);
+  //    for (j = x[i];  j < x[i+1]; j++) {dest[j] = 0xffe0;}
+  //  }
+  //  //printf(".\n");
+}
+
+
+
+
+struct vertex needlevertices[] = {
+  { 30, 168},
+  { 45, 167},
+  { 50, 165},
+  {156, 165},
+  {156, 172},
+  { 50, 172},
+  { 45, 170},
+  { 30, 169}
+};
+
+const int needlevertexcount = sizeof(needlevertices) / sizeof(struct vertex);
 
 void calc_lines(u16 *dest, int line, int frame, int linect, int needlepos) { // needlepos 0..511
   int symindex = 9; // (frame/10) % numsyms;
 
-  int x1 = -1, x2 = -1;
-  int y1 = -1, y2 = -1;
-
   if (needlepos >= 0) {
     float angle = ((needlepos * 220.0 / 511.0) - 20.0)  * M_PI/180.0;
-    x1 = centrex - (int)(cos(angle) * needlen);
-    y1 = centrey - (int)(sin(angle) * needlen);
-
-    if (y1 <= centrey) {x2 = centrex; y2 = centrey;}
-    else               {x2 = x1; y2 = y1; x1 = centrex; y1 = centrey;}
-
-    // Polygon version prototyping
-    initrectangle(27,164, 153,169, 151,166, angle);
+    //initneedle(angle);
+    initpolygon(needlevertexcount, needlevertices, 154, 168, angle);
   }
 
   int width   = symbols[symindex].width;
@@ -311,42 +425,29 @@ void calc_lines(u16 *dest, int line, int frame, int linect, int needlepos) { // 
     u16 *linestart = dest;
     int x;
     if ((y < yoffset) || (y >= yoffset+height)) {
-      for (x=0; x<320; x++) {*dest++ = 0xffff;}
+      for (x=0; x<320; x++) {*dest++ = 0;}
     } else {
       x=0;
-      while (x < xoffset) {*dest++ = 0xffff; x++;}
+      while (x < xoffset) {*dest++ = 0; x++;}
       u8 *p = bits + symbols[symindex].rows[y-yoffset];
       while ((x < 320) && (*p != 0x80)) {  // process pixels until eol
         int n      = *p & 0x7f;
         int repeat = *p & 0x80;
         p++;
         if (repeat) {
-          u16 v = 0xffff - *((u16 *)p);  p += 2;
+          u16 v = *((u16 *)p);  p += 2;
           for (int i=0; i<n; i++) {*dest++ = v;}
         } else {  // distinct values
           for (int i=0; i<n; i++) {
-            *dest++ = 0xffff - *((u16 *)p);  p += 2;
+            *dest++ = *((u16 *)p);  p += 2;
           }
         }
         x += n;
       }
-      while (x<320) {*dest++ = 0xffff; x++;}
+      while (x<320) {*dest++ = 0; x++;}
 
-      // Polygon version prototyping
+      // Overlay needle
       scanlinepolygon(y, linestart);
-    }
-
-    if ((y >= y1) && (y <= y2)) {
-      int nx;
-      if (y2 != y1) {
-        nx = x1 + ((y-y1) * (x2-x1))/(y2-y1);
-        //printf("y = %d, nx = %d.\n", y, nx);
-      } else {
-        nx = (x1 + x2) / 2;  // TEMP - needs to draw full width.
-      }
-      linestart[nx-1] = 0;
-      linestart[nx  ] = 0;
-      linestart[nx+1] = 0;
     }
   }
 }

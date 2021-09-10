@@ -211,6 +211,12 @@ uint16_t rgba565(png_bytep pixel) {
 }
 
 
+void emitpixel(uint16_t pixel) {
+//emitbyte(pixel >> 8);    emitbyte(pixel & 0xff);  // Big endian
+  emitbyte(pixel & 0xff);  emitbyte(pixel >> 8);    // Little endian
+
+}
+
 void emitrow(uint16_t *row, int width){
 
   int x;
@@ -230,12 +236,12 @@ void emitrow(uint16_t *row, int width){
       // Emit run of nonequal values
       while (j-i > 127) {
         emitbyte(127);
-        for (x=i; x<i+127; x++) {emitbyte(row[x] >> 8);  emitbyte(row[x] & 0xff);}
+        for (x=i; x<i+127; x++) {emitpixel(row[x]);}
         i += 127;
       }
       if (i<j) {
         emitbyte(j-i);
-        for (x=i; x<j; x++) {emitbyte(row[x] >> 8);  emitbyte(row[x] & 0xff);}
+        for (x=i; x<j; x++) {emitpixel(row[x]);}
       }
       i=j;
     }
@@ -255,11 +261,11 @@ void emitrow(uint16_t *row, int width){
       } else {
         // Emit run of equal values
         while (j-i > 127) {
-          emitbyte(0x80 + 127);  emitbyte(row[i] >> 8);  emitbyte(row[i] & 0xff);
+          emitbyte(0x80 + 127);  emitpixel(row[i]);
           i += 127;
         }
         if (j>i) {
-          emitbyte(0x80 + j-i);  emitbyte(row[i] >> 8);  emitbyte(row[i] & 0xff);
+          emitbyte(0x80 + j-i);  emitpixel(row[i]);
           i = j;
         }
       }
