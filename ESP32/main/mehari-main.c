@@ -149,6 +149,8 @@ void lcd_init(spi_device_handle_t spi) {
 }
 
 
+
+
 ///       Polygon rendering by edges
 //
 //        1) Determining the edge list sorted by y value.
@@ -158,37 +160,48 @@ void lcd_init(spi_device_handle_t spi) {
 //           b) Fill the scanline between x value pairs;
 //           c) Where this is the last scanline of an edge, advance to the ext edge.
 
-
 enum {maxedges = 20};  // Roughly 14 expected
 
 struct vertex {int x; int y;};
 
-struct edge {int x1; int y1; int x2; int y2;} edges[maxedges];
+struct edge {int x1; int y1; int x2; int y2;} edges[maxedges];  // x: 27.5, y: 30.2
 
 int edgecount = 0;
 
-void rotate(int x, int y, int xo, int yo, float sine, float cosine, int *xr, int *yr) {
-  *xr = (int)(xo + (x-xo)*cosine - (y-yo)*sine);
-  *yr = (int)(yo + (y-yo)*cosine + (x-xo)*sine);
+void rotate(float x, float y, float xo, float yo, float sine, float cosine, float *xr, float *yr) {
+  *xr = xo + (x-xo)*cosine - (y-yo)*sine;
+  *yr = yo + (y-yo)*cosine + (x-xo)*sine;
 }
 
 void addedge(int x1, int y1, int x2, int y2, int xo, int yo, float sine, float cosine) {
+  // x's in fixed point 27.5
+  // y's in fixed point 30.2
 
   if ((x1 != y1) || (x2 != y2)) {  // Omit 0 length edges
 
     assert(edgecount < maxedges);
 
-    rotate(x1, y1, xo, yo, sine, cosine, &edges[edgecount].x1, &edges[edgecount].y1);
-    rotate(x2, y2, xo, yo, sine, cosine, &edges[edgecount].x2, &edges[edgecount].y2);
+    float xr, yr;
 
-    // Arrange the edge with y1 being <= y2
-    if (edges[edgecount].y1 > edges[edgecount].y2) {
-      int xt = edges[edgecount].x1;               int yt = edges[edgecount].y1;
-      edges[edgecount].x1 = edges[edgecount].x2;  edges[edgecount].y1 = edges[edgecount].y2;
-      edges[edgecount].x2 = xt;                   edges[edgecount].y2 = yt;
+    rotate(x1/32.0, y1/4.0, xo/32.0, yo/4.0, sine, cosine, &xr, &yr);
+    edges[edgecount].x1 = (int)(xr*32.0);
+    edges[edgecount].y1 = (int)(yr*4.0);
+
+    rotate(x2/32.0, y2/4.0, xo/32.0, yo/4.0, sine, cosine, &xr, &yr);
+    edges[edgecount].x2 = (int)(xr*32.0);
+    edges[edgecount].y2 = (int)(yr*4.0);
+
+    if (edges[edgecount].y1 != edges[edgecount].y2) {  // Omit perfectly horizontal lines
+
+      // Arrange the edge with y1 being <= y2
+      if (edges[edgecount].y1 > edges[edgecount].y2) {
+        int xt = edges[edgecount].x1;               int yt = edges[edgecount].y1;
+        edges[edgecount].x1 = edges[edgecount].x2;  edges[edgecount].y1 = edges[edgecount].y2;
+        edges[edgecount].x2 = xt;                   edges[edgecount].y2 = yt;
+      }
+
+      edgecount++;
     }
-
-    edgecount++;
   }
 }
 
@@ -196,6 +209,8 @@ void addedge(int x1, int y1, int x2, int y2, int xo, int yo, float sine, float c
 
 
 void initpolygon(int vertexcount, struct vertex vertices[], int originx, int originy, float angle) {
+
+  // NOTE: integer inputs are in subpixel coordinates: x is 27.5, y is 30.2.
 
   float sine   = sin(angle);
   float cosine = cos(angle);
@@ -209,16 +224,14 @@ void initpolygon(int vertexcount, struct vertex vertices[], int originx, int ori
       sine, cosine
     );
   }
-}
 
-
-
-
-int interpolate(int a, int a1, int a2, int b1, int b2) {
-  // input: a is a position between a1 and a2
-  // result is the corresponding position between b1 and b2
-  if (a2 == a1) return b1;
-  return b1 + ((a-a1)*(b2-b1))/(a2-a1);
+  //printf("initpolygon generated %d edges:\n", edgecount);
+  //for (int i=0; i<edgecount; i++) {
+  //  printf("  [%2d]  x1 %d.%d, y1 %d.%d,  x2 %d.%d, y2 %d.%d.\n", i,
+  //    edges[i].x1>>5, edges[i].x1&31, edges[i].y1>>2, edges[i].y1&3,
+  //    edges[i].x2>>5, edges[i].x2&31, edges[i].y2>>2, edges[i].y2&3
+  //  );
+  //}
 }
 
 
@@ -251,23 +264,29 @@ void blendsrgb(int r, int g, int b, int intensity, u16* dest) {
   // r, g, b in [0..63]
   // intensity in [0..128]
 
+  int rp, gp, bp;  // New rgb values (r prime, g prime, b prime).
+
   if (intensity > 0) {
+    if (intensity >= 127) {
 
-    // Exiting red, green, blue values (srgb).
+      rp = r;  gp = g;  bp = b;
 
-    int rd = ((*dest) >> 10) & 0x3E;
-    int gd = ((*dest) >> 5)  & 0x3F;
-    int bd = ((*dest) << 1)  & 0x3E;
+    } else {
 
-    // New rgb values (r prime, g prime, b prime).
+      // Exiting red, green, blue values (srgb).
 
-    int rp = blendchannel(r, intensity, rd);
-    int gp = blendchannel(g, intensity, gd);
-    int bp = blendchannel(b, intensity, bd);
+      int rd = ((*dest) >> 10) & 0x3E;
+      int gd = ((*dest) >> 5)  & 0x3F;
+      int bd = ((*dest) << 1)  & 0x3E;
 
-    assert(rp < 64);
-    assert(gp < 64);
-    assert(bp < 64);
+      rp = blendchannel(r, intensity, rd);
+      gp = blendchannel(g, intensity, gd);
+      bp = blendchannel(b, intensity, bd);
+
+      assert(rp < 64);
+      assert(gp < 64);
+      assert(bp < 64);
+    }
 
     *dest = ((rp & 0x3E) << 10) | (gp << 5) | (bp >> 1);
   }
@@ -276,20 +295,47 @@ void blendsrgb(int r, int g, int b, int intensity, u16* dest) {
 
 
 
+int interpolate(int a, int a1, int a2, int b1, int b2) {
+  // input: a is a position between a1 and a2
+  // result is the corresponding position between b1 and b2
+
+  if (a2 == a1) {printf("interpolate called with a1 = a2.\n"); return b1;}
+
+  int result = b1 + ((a-a1)*(b2-b1))/(a2-a1);
+
+  if (!((result > 0)  &&  (result < 320*32))) {
+
+    printf("interpolate: result out of range:\n");
+    printf("  a: %d.%d, a1: %d.%d, a2: %d.%d, b1: %d.%d, b2: %d.%d -> result: %d.%d.\n",
+      a>>2,  a&3,
+      a1>>2, a1&3,  a2>>2, a2&3,
+      b1>>5, b1&31, b2>>5, b2&31,
+      result>>5, result&31
+    );
+  }
+
+
+  return result;
+}
+
+
 void scanlinepolygon(int y, u16 *dest) {
   int i, j, t, xcount, x[4*edgecount];
 
   xcount = 0;
 
-  for (int sy = 0;  sy < 4;  sy++) {  // For each subpixel scanline
+  for (int dy = 0;  dy < 4;  dy++) {  // For each subpixel scanline
+
+    int sy = y*4 + dy;
 
     for (int e = 0;  e < edgecount;  e++) {
       struct edge *ep = &edges[e];
 
-      if ((y >= ep->y1) && (y < ep->y2)) {
+      if ((sy >= ep->y1) && (sy < ep->y2)) {
 
-        int sx = interpolate(y*4+sy,  ep->y1*4, ep->y2*4,  ep->x1*32, ep->x2*32);
-        x[xcount++] = sx*4 | sy;  // Note - include sub scanline as bottom bits of x positions
+        int sx = interpolate(sy,  ep->y1, ep->y2,  ep->x1, ep->x2);
+
+        x[xcount++] = sx*4 | dy;  // Note - include sub scanline as bottom bits of x positions
 
         //printf("Process edge from %d,%d to %d,%d for line %d giving %d.%d[%d].\n",
         //  ep->x1, ep->y1, ep->x2, ep->y2, y,
@@ -369,14 +415,7 @@ void scanlinepolygon(int y, u16 *dest) {
     // We now have a buffer of intensity by pixel, each valued 0..128.
 
     for (j = 0;  j < 320;  j++) {
-      if (intensity[j] > 0) {
-        if (intensity[j] > 127) {
-          assert(intensity[j] == 128);
-          dest[j] = 0xffe0;
-        } else {
-          blendsrgb(63, 63, 0, intensity[j], &dest[j]);  // yellow
-        }
-      }
+      if (intensity[j] > 0) {blendsrgb(63, 63, 63, intensity[j], &dest[j]);}  // white
     }
   }
 
@@ -395,15 +434,21 @@ void scanlinepolygon(int y, u16 *dest) {
 
 
 struct vertex needlevertices[] = {
-  { 30, 168},
-  { 45, 167},
-  { 50, 165},
-  {156, 165},
-  {156, 172},
-  { 50, 172},
-  { 45, 170},
-  { 30, 169}
+  { 30*32, 168*4},
+  { 47*32, 166*4},
+  { 50*32, 165*4},
+  {146*32, 165*4},
+  {150*32, 161*4},
+  {156*32, 161*4},
+  {160*32, 165*4},
+  {160*32, 171*4},
+  {156*32, 175*4},
+  {150*32, 175*4},
+  {146*32, 171*4},
+  { 50*32, 170*4},
+  { 47*32, 169*4}
 };
+
 
 const int needlevertexcount = sizeof(needlevertices) / sizeof(struct vertex);
 
@@ -413,7 +458,7 @@ void calc_lines(u16 *dest, int line, int frame, int linect, int needlepos) { // 
   if (needlepos >= 0) {
     float angle = ((needlepos * 220.0 / 511.0) - 20.0)  * M_PI/180.0;
     //initneedle(angle);
-    initpolygon(needlevertexcount, needlevertices, 154, 168, angle);
+    initpolygon(needlevertexcount, needlevertices, 153*32, 168*4, angle);
   }
 
   int width   = symbols[symindex].width;
