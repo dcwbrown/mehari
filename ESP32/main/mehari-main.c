@@ -415,7 +415,7 @@ void scanlinepolygon(int y, u16 *dest) {
     // We now have a buffer of intensity by pixel, each valued 0..128.
 
     for (j = 0;  j < 320;  j++) {
-      if (intensity[j] > 0) {blendsrgb(63, 63, 63, intensity[j], &dest[j]);}  // white
+      if (intensity[j] > 0) {blendsrgb(63, 63, 63, intensity[j], &dest[j]);}  // brightish green
     }
   }
 

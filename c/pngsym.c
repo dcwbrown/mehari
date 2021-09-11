@@ -212,9 +212,7 @@ uint16_t rgba565(png_bytep pixel) {
 
 
 void emitpixel(uint16_t pixel) {
-//emitbyte(pixel >> 8);    emitbyte(pixel & 0xff);  // Big endian
   emitbyte(pixel & 0xff);  emitbyte(pixel >> 8);    // Little endian
-
 }
 
 void emitrow(uint16_t *row, int width){
